@@ -1,0 +1,174 @@
+---
+title: "FLP-calculations"
+author: "Sarah Hu"
+date: "5/3/2022"
+output: html_document
+
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Premise
+
+Define cell concentrations
+```{r}
+# Based on previous Axial microbio surveys, we can assume the concentration at diffuse fluids is 1x10^5 cells/ml
+insitu <- 1E5
+
+bsw <- 1E4 #assumed in situ concentration for plume & background
+
+# We will be collecting the resident population, concentrating it, heat-killing, staining, and then counting. 
+
+## Our stock FLP from resident prey population (Quissett beach FLP stock)
+flp_stock <- 3E8 # FLP from WHOI
+# flp_axial <- #fill in with estimated stock from Axial in situ
+# flp_old <- 2.79E8
+```
+
+Define experiment parameters
+```{r}
+# For the FLP uptake experiment set up, in ml
+total_vol_SID <- 380
+total_vol_1000 <- 1000
+total_vol_500 <- 500
+total_vol_200 <- 200
+
+# When miniSID chamber is filled, tracer prey get added at this volume
+inoc_trace_SID <- 30
+
+# To spike bottles target making 2000 µl incoulum
+inoc_trace_bottles <- 2
+
+# Final volume of prey tracer, in ml
+total_vol_tracer <- 50
+
+## Desired final concentration of FLP
+flp_final <- (0.1)*insitu
+# flp_final # 10% of in situ bacteria and archaea population
+
+flp_final_bsw <- (0.1)*bsw
+# flp_final_bsw
+```
+
+
+## Prepare FLP working stock
+
+When FLP working stock is 1e6, for the miniSID you end up needing ~20 ml to prep 3 bags. 
+```{r}
+# 1e+6
+flp_working <- 1e+6 # Concentration of working stock of FLP
+
+vol_working <- 45 #ml
+
+vol_stock <- (vol_working * flp_working)/flp_stock
+# vol_stock*1000 #µl
+
+cat("To prep working stock of FLP at", vol_working, "mls, add", (vol_stock*1000), "µl of FLP stock to", (vol_working - vol_stock), "ml of buffer or ultra-cleaen seawater. Final concentration will be", flp_working, "cells/ml.")
+```
+
+
+### miniSID calcs
+
+Solve for needed concentration of FLP in the FLP prey tracer bag for the miniSID
+```{r}
+# c1v1=c2v2
+# (c1)(vol of added tracer) = (1E4)(390ml)
+
+c1 <- (flp_final*total_vol_SID)/(inoc_trace_SID)
+# set C1 to new R object
+inoc_conc_SID <- c1
+
+inoc_conc_SID # Final concentration of tracer prey bag
+formatC(inoc_conc_SID, format = "e", digits = 2)
+```
+
+Now, solve for preparing the tracer prey bag.
+While we assume about 30 ml of the tracer prey bag will be taken up by the main chamber, we will set the final volume of tracer prey bag to 50 ml
+```{r}
+#c1v2=c2v2
+# (desired conc of flp in inoc)(total vol of tracer prey bag) = (stock FLP conc)(v2)
+v2 <- (inoc_conc_SID*total_vol_tracer)/flp_working
+# v2
+# set v1 to new R object
+stock_vol_SID <- v2
+stock_vol_SID # in ml, how much of stock FLP to add
+stock_vol_SID*1000 # in µl
+```
+Prepare tracer prey bags.
+```{r}
+cat("Add", (stock_vol_SID*1000), "µl to", (total_vol_tracer - stock_vol_SID), "ml of ultrafiltered seawater to prep miniSID tracer prey bag for deployment at vent site. Final concentration of tracer prey in main chamber will be", (flp_final), "cells/ml.")
+
+cat("For full miniSID deployment, prep 6 tracer prey bags with", (stock_vol_SID), "mls of working stock total. You need,", (stock_vol_SID*6), "mls total.\n\nFor 3 bags, have", (stock_vol_SID*3), "mls.\n\nFor 6 bags, have", (stock_vol_SID*6), "mls.")
+```
+
+### Shipboard
+
+Depending on target location and available vent or sample fluid, there are a few scenarios for experiments.
+
+#### Vent 1L 
+
+
+#### Vent 500 ml
+
+Vent 500 ml experiments have 
+* 2 Control bottles (0.8µm filtered) at 250 ml total
+* 3 experiment bottles at 500 ml total
+
+Define variables for this experiment and print out set up.
+```{r}
+## Desired final concentration of FLP
+flp_final <- (0.1)*1E5
+flp_final # 10% of in situ bacteria and archaea population
+
+ctrl_ship <- 250
+
+exp_ship <- 500
+
+flp_working
+
+vol_inoc_ctrl <- (flp_final * ctrl_ship)/flp_working
+vol_inoc_ctrl * 1000 #µl
+
+vol_inoc_exp <- (flp_final * exp_ship)/flp_working
+vol_inoc_exp * 1000 #µl
+
+
+cat("For shipboard vent grazing experiments where exp bottles are 500 ml and controls are 250 ml, add:\n\n", (vol_inoc_ctrl * 1000), "µl of working stock to 250 ml Control bottles\n", (vol_inoc_exp * 1000), "µl of working stock to 500 ml experimental bottles.\n\n For complete experiment with 2 controls and 3 experimental bottles, you will need", ((vol_inoc_ctrl*2) + (vol_inoc_exp*3)), "mls of FLP working stock.")
+```
+
+#### Plume & background 1000 ml
+
+Background 1000 ml experiments have 
+* 2 Control bottles (0.8µm filtered) at 500 ml total
+* 3 experiment bottles at 1000 ml total
+
+Define variables for this experiment and print out set up.
+```{r}
+## Desired final concentration of FLP
+flp_final_bsw <- (0.1)*1E4
+flp_final_bsw # 10% of in situ bacteria and archaea population
+
+ctrl_ship <- 500 #500 ml control
+
+exp_ship <- 1000 # 1L experimental
+
+# flp_stock
+flp_working # 1e+6
+
+vol_inoc_ctrl <- (flp_final_bsw * ctrl_ship)/flp_working
+vol_inoc_ctrl * 1000 #µl
+
+vol_inoc_exp <- (flp_final_bsw * exp_ship)/flp_working
+vol_inoc_exp * 1000 #µl
+
+
+cat("For shipboard plume & background grazing experiments where exp bottles are 1000 ml and controls are 500 ml, add:\n\n", (vol_inoc_ctrl * 1000), "µl of working stock to 500 ml Control bottles\n", (vol_inoc_exp * 1000), "µl of working stock to 1000 ml experimental bottles.\n\n For complete experiment with 2 controls and 3 experimental bottles, you will need", ((vol_inoc_ctrl*2) + (vol_inoc_exp*3)), "mls of FLP working stock.")
+```
+
