@@ -27,7 +27,7 @@ bsw <- 1E4 #assumed in situ concentration for plume & background
 # We will be collecting the resident population, concentrating it, heat-killing, staining, and then counting. 
 
 ## Our stock FLP from resident prey population (Quissett beach FLP stock)
-# flp_stock <- 3E8 # FLP from WHOI
+flp_stock <- 1E8 # FLP from WHOI
 
 flp_axial <- 6E6 #fill in with estimated stock from Axial in situ
 # flp_old <- 2.79E8
@@ -65,10 +65,11 @@ When FLP working stock is 1e6, for the miniSID you end up needing ~20 ml to prep
 ```{r}
 # 1e+6
 flp_working <- 1e+6 # Concentration of working stock of FLP
-vol_working <- 45 #ml
+vol_working <- 45 #ml # for miniSID
+# vol_working <- 20 #ml for shipboard
 vol_stock <- (vol_working * flp_working)/flp_stock
 # vol_stock <- (vol_working * flp_working)/flp_axial
-# vol_stock*1000 #µl
+vol_stock*1000 #µl
 
 cat("To prep working stock of FLP at", vol_working, "mls, add", (vol_stock*1000), "µl of FLP stock to", (vol_working - vol_stock), "ml of buffer or ultra-cleaen seawater. Final concentration will be", flp_working, "cells/ml.")
 ```
@@ -174,3 +175,77 @@ vol_inoc_exp * 1000 #µl
 cat("For shipboard plume & background grazing experiments where exp bottles are 1000 ml and controls are 500 ml, add:\n\n", (vol_inoc_ctrl * 1000), "µl of working stock to 500 ml Control bottles\n", (vol_inoc_exp * 1000), "µl of working stock to 1000 ml experimental bottles.\n\n For complete experiment with 2 controls and 3 experimental bottles, you will need", ((vol_inoc_ctrl*2) + (vol_inoc_exp*3)), "mls of FLP working stock.")
 ```
 
+
+## Estimating ideal stock FLP
+
+Assumes 7 miniSID deployments and 6 shipboard experiments. 
+
+I have been making a working stock of 1e6, and assuming the frozen stock is 1e8. This is what the FLP from WHOI is around, so we're starting here to estimate total cells needed.
+
+Based on above, we need 38 mls of working stock (1e6) for 6 prey tracer bags for a miniSID deployment. This is already an overestimate, because we may not have that many prey tracer bags, but we aren't sure what the schedule looks like yet - so this is conservative. 
+
+Also, based on above, for a vent shipboard experiment we need 17 mls of working stock - but I'd like to increase this in anticipation of having 1 L treatments ideally - 22 mls of working stock at 1e6. Assume I run 6 shipboard experiments. 
+
+How many mls total of working stock do I need for all these experiments?
+For miniSID, 
+```{r}
+# 6 bags use 38 mls * 7 deployments
+38 * 7
+
+# add 20%
+((38 * 7)*(0.2)) + (38 * 7)
+
+
+# 6 experiments, 22 mls each.
+6 * 22
+
+((6 * 22)*(0.2)) + (6 * 22)
+```
+
+Need a total of `319 ml` for miniSID and `158.4 mls` for shipboard.
+
+Round up and assume we need `350 ml` of working stock at 1e6 cells/ml for the miniSID deployments.
+And round up to `175 mls` for the shipboard experiment.
+
+What about frozen stock?
+```{r}
+# Therefore we need
+500 * 7
+```
+
+Based on above we need `~500 ul` of frozen stock to make 45 mls of working stock and `200 ul` of frozen stock to make 20 mls of working stock.
+Where working stock is 1e6 and frozen stock is 1e6.
+
+Assuming these calculations
+What about frozen stock?
+```{r}
+# Therefore we need
+min_froz <- 500 * 7 # miniSID frozen stock
+min_froz
+
+ship_froz <- 200 * 6 # shipboard frozen stock
+ship_froz
+
+total_ul <- min_froz + ship_froz
+```
+
+Together that is ```min_froz + ship_froz``` total uls of frozen stock needed at 1e8.
+
+
+Estimate total cells needed:
+```{r}
+total_ul / 1000 # reports total ul as mls.
+total_cells <- (total_ul/1000) * 1e8 #unit is cells/ml
+total_cells
+```
+Total cells needed in the frozen stocks is ```total_cells```.
+
+Again, to be conservative - we may lose up to 60% of the grown cells... So estimate how many cells we need with this type of error.
+```{r}
+# Account for this
+((total_cells)*0.6) + (total_cells)
+```
+
+Can we add an order of magnitude to be safe??
+
+*1 x 10^9*
